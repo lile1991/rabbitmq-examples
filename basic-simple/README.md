@@ -1,4 +1,4 @@
-# example rabbitmq
+# Rabbitmq Example
 #### rabbitmq客户端示例:
 基于amqp-client的客户端示例: example.simple.SimpleClient, 官方示例文档: http://www.rabbitmq.com/api-guide.html  
 输出示例：
