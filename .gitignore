@@ -1,3 +1,5 @@
 # Created by .ignore support plugin (hsz.mobi)
 *.iml
 .idea/
+spring-simple/target/
+basic-simple/target/
