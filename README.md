@@ -1,2 +1,2 @@
-# example
-各种代码实例
+# RabbitMQ Examples
+rabbitmq相关代码实例
