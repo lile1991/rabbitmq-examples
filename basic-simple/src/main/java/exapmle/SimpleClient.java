@@ -70,7 +70,7 @@ public class SimpleClient {
                 channel.basicAck(envelope.getDeliveryTag(), false);
                 // 拒绝， 第二个参数表示是否将消息放回队列
                 // channel.basicReject(envelope.getDeliveryTag(), false);
-                log.info("用户注册成功");
+                log.info("应答完成 -- 用户注册成功");
             }
         });
 
