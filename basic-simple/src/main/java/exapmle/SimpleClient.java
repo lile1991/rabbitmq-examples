@@ -38,13 +38,16 @@ public class SimpleClient {
         log.info("打开channel成功");
 
         // 队列消息示例
-        queueExample(conn, channel);
+        // queueExample(conn, channel);
 
         // Topic消息示例
-        // topicExample(conn, channel);
+        topicExample(conn, channel);
         System.in.read();
     }
 
+    /**
+     * 演示队列
+     */
     private static void queueExample(Connection conn, Channel channel) throws IOException {
         // 二、声明 交换机/队列， 并绑定路由
         String exchangeName = "userDirect";
@@ -60,7 +63,7 @@ public class SimpleClient {
 
 
         // 三、发布消息
-        for(int i = 0; i < 10000; i ++){
+        for(int i = 0; i < 1000; i ++){
             channel.basicPublish(exchangeName, routingKey, MessageProperties.PERSISTENT_TEXT_PLAIN, ("{\"user\": \"光头强" + i + "\"}").getBytes());
             log.info("basicPublish -- 发布用户注册消息成功");
         }
@@ -96,55 +99,42 @@ public class SimpleClient {
         });
     }   // End queueExample
 
-
+    /**
+     * 演示发布/订阅， 如用户注册时， 分别为用户初始化账户、个人信息、其他信息
+     */
     private static void topicExample(Connection conn, Channel channel) throws IOException {
         // 二、声明 交换机/队列， 并绑定路由
         String exchangeName = "userTopic";
-        String queueName = "login";
-        String routingKey = exchangeName + "." + queueName;
         // 声明交换机
         channel.exchangeDeclare(exchangeName, "topic", true);
-        // 声明队列 exclusive = true时， 仅限本连接监听该队列
-        channel.queueDeclare(queueName, true, false, false, null);
-        // 绑定队列和交换机
-        channel.queueBind(queueName, exchangeName, routingKey);
 
-
+        // 设置多个监听器
+        String[] queueNames = new String[] {"initAccount", "initInfo", "initOther"};
         // 三、监听消息
-        boolean autoAck = false;
-        channel.basicConsume(queueName, autoAck, new DefaultConsumer(channel) {
-            @Override
-            public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
-                String routingKey = envelope.getRoutingKey();
-                String contentType = properties.getContentType();
-                log.info("basicConsume1 -- 收到用户登录消息, consumerTag={}, routingKey={}, body={}", consumerTag, routingKey, new String(body));
+        for(final String queueName: queueNames) {
+            // 声明队列
+            channel.queueDeclare(queueName, true, false, false, null);
+            // 绑定队列和交换机
+            channel.queueBind(queueName, exchangeName, "userTopic.*");
 
-                // 成功
-                // channel.basicAck(envelope.getDeliveryTag(), false);
-                // 拒绝， 第二个参数表示是否将消息放回队列
-                // channel.basicReject(envelope.getDeliveryTag(), false);
-                log.info("应答完成1 -- 用户登录成功");
-            }
-        });
-        channel.basicConsume(queueName, autoAck, new DefaultConsumer(channel) {
-            @Override
-            public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
-                String routingKey = envelope.getRoutingKey();
-                String contentType = properties.getContentType();
-                log.info("basicConsume2 -- 收到用户登录消息, consumerTag={}, routingKey={}, body={}", consumerTag, routingKey, new String(body));
+            boolean autoAck = false;
+            channel.basicConsume(queueName, autoAck, new DefaultConsumer(channel) {
+                @Override
+                public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
+                    String routingKey = envelope.getRoutingKey();
+                    log.info("queue={} -- 收到用户注册消息, consumerTag={}, routingKey={}, body={}", queueName, consumerTag, routingKey, new String(body));
 
-                // 成功
-                // channel.basicAck(envelope.getDeliveryTag(), false);
-                // 拒绝， 第二个参数表示是否将消息放回队列
-                // channel.basicReject(envelope.getDeliveryTag(), false);
-                log.info("应答完成2 -- 用户登录成功");
-            }
-        });
+                    // 成功
+                    channel.basicAck(envelope.getDeliveryTag(), false);
+                }
+            });
 
+        }
 
-        // 三、发布消息
-        channel.basicPublish(exchangeName, routingKey, MessageProperties.PERSISTENT_TEXT_PLAIN, "{\"user\": \"光头强\", \"ip\": \"127.0.0.1\"}".getBytes());
-        log.info("basicPublish -- 发布用户登录消息成功");
+        // 三、发布一条消息， 将匹配路由userTopic.*
+        channel.basicPublish(exchangeName, "userTopic.register", MessageProperties.PERSISTENT_TEXT_PLAIN, "{\"user\": \"光头强注册啦\", \"ip\": \"127.0.0.1\"}".getBytes());
+        log.info("basicPublish -- 发布光头强注册消息成功");
+
     }   // End topicExample
 
 }
