@@ -1,6 +1,9 @@
 # RabbitMQ Example
    #### rabbitmq客户端示例:
-   基于amqp-client的客户端示例: example.simple.SimpleClient, 官方示例文档: http://www.rabbitmq.com/api-guide.html  
+   基于amqp-client的客户端示例: example.simple.SimpleClient   
+   官方示例文档:   
+        http://www.rabbitmq.com/api-guide.html  
+        http://www.rabbitmq.com/getstarted.html  
    输出示例：
    ```
    [main] INFO exapmle.SimpleClient - 连接RabbitMQ服务成功
