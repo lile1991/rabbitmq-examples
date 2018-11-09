@@ -68,6 +68,7 @@ public class SimpleClient {
         // 四、接收消息
         boolean autoAck = false;
         channel.basicConsume(queueName, autoAck, new DefaultConsumer(channel) {
+            int i = 0;
             @Override
             public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
                 String routingKey = envelope.getRoutingKey();
@@ -78,18 +79,19 @@ public class SimpleClient {
                 //  2、对于第三方超时可以用basicReject、basicNack, requeue传true, 但需要控制重试次数, 多次仍然失败后记错误日志并将requeue传false, 丢弃消息
                 //  3、非超时异常用basicReject、basicNack, requeue传false, 不要将消息重新入队, 记录日志, 后续走补偿修复
 
-                // 成功, 可支持批量
                 boolean multiple = true;// 表示批量， true时应答deliveryTag <= envelope.getDeliveryTag()之前的所有消息
-                channel.basicAck(envelope.getDeliveryTag(), multiple);
-
-
-                // 拒绝, 不支持批量
-                boolean requeue = true; // 是否重新入队
-                channel.basicReject(envelope.getDeliveryTag(), requeue);
-
-                // 否定, 可支持批量
-                channel.basicNack(envelope.getDeliveryTag(), multiple, requeue);
-                log.info("应答完成 -- 用户注册成功");
+                boolean requeue = false; // 是否重新入队
+                if((i % 5) == 0) {
+                    // 成功, 可支持批量
+                    channel.basicAck(envelope.getDeliveryTag(), multiple);
+                } else if((i % 8) == 0) {
+                    // 拒绝, 不支持批量
+                    channel.basicReject(envelope.getDeliveryTag(), requeue);
+                } else {
+                    // 否定, 可支持批量
+                    channel.basicNack(envelope.getDeliveryTag(), multiple, requeue);
+                    log.info("应答完成 -- 用户注册成功");
+                }
             }
         });
     }   // End queueExample
