@@ -15,5 +15,5 @@
      
 RabbitMQ应答方式说明：
 1. 可以全都用basicAck， 异常情况再做补偿
-2. 对于第三方超时可以用basicReject、basicNack, requeue传true, 但需要控制重试次数, 多次仍然失败后记错误日志并将requeue传false, 丢弃消息
-3. 非超时异常用basicReject、basicNack, requeue传false, 不要将消息重新入队, 记录日志, 后续走补偿修复
+2. 对于第三方超时可以用basicReject、basicNack, requeue传true, 但需要控制重试次数, 多次仍然失败后记录数据，并将requeue传false, 后续补偿修复
+3. 非超时异常用basicReject、basicNack, requeue传false, 不要将消息重新入队, 记录数据, 后续走补偿修复
