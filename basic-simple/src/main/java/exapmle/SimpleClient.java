@@ -114,8 +114,8 @@ public class SimpleClient {
         for(final String queueName: queueNames) {
             // 声明队列
             channel.queueDeclare(queueName, true, false, false, null);
-            // 绑定队列和交换机
-            channel.queueBind(queueName, exchangeName, "userTopic.*");
+            // 为每个队列绑定相同的exchange和routingKey；    routingKey也可用用通配符， 例如userTopic.*
+            channel.queueBind(queueName, exchangeName, "userTopic.register");
 
             boolean autoAck = false;
             channel.basicConsume(queueName, autoAck, new DefaultConsumer(channel) {
@@ -131,7 +131,7 @@ public class SimpleClient {
 
         }
 
-        // 三、发布一条消息， 将匹配路由userTopic.*
+        // 三、发布一条消息， 将匹配路由userTopic.register
         channel.basicPublish(exchangeName, "userTopic.register", MessageProperties.PERSISTENT_TEXT_PLAIN, "{\"user\": \"光头强注册啦\", \"ip\": \"127.0.0.1\"}".getBytes());
         log.info("basicPublish -- 发布光头强注册消息成功");
 
