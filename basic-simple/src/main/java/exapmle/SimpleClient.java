@@ -104,8 +104,8 @@ public class SimpleClient {
      */
     private static void topicExample(Connection conn, Channel channel) throws IOException {
         // 二、声明 交换机/队列， 并绑定路由
-        String exchangeName = "userTopic";
-        // 声明交换机
+        String exchangeName = "userTopic1";
+        // 声明交换机, type="topic", 这样routingKey就可以支持通配符*了
         channel.exchangeDeclare(exchangeName, "topic", true);
 
         // 设置多个监听器
@@ -114,8 +114,8 @@ public class SimpleClient {
         for(final String queueName: queueNames) {
             // 声明队列
             channel.queueDeclare(queueName, true, false, false, null);
-            // 为每个队列绑定相同的exchange和routingKey；    routingKey也可用用通配符， 例如userTopic.*
-            channel.queueBind(queueName, exchangeName, "userTopic.register");
+            // 为每个队列绑定相同的exchange和routingKey
+            channel.queueBind(queueName, exchangeName, "userTopic.*");
 
             boolean autoAck = false;
             channel.basicConsume(queueName, autoAck, new DefaultConsumer(channel) {
